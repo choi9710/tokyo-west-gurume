@@ -16,7 +16,8 @@ export const WARDS: Ward[] = [
     id: 'shinjuku',
     name: '新宿区',
     areas: [
-      { id: 'shinjuku',     name: '新宿',   lat: 35.6896, lng: 139.7006 },
+      { id: 'shinjuku',     name: '新宿',    lat: 35.6896, lng: 139.7006 },
+      { id: 'shinokubo',    name: '新大久保', lat: 35.7009, lng: 139.7004 },
       { id: 'takadanobaba', name: '高田馬場', lat: 35.7127, lng: 139.7036 },
       { id: 'kagurazaka',   name: '神楽坂',  lat: 35.7021, lng: 139.7445 },
     ],
