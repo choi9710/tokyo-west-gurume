@@ -17,7 +17,7 @@ src/
   components/
     layout/Header.tsx           -- 앱 타이틀바
     search/SearchBar.tsx        -- 검색 입력창
-    search/AreaSelector.tsx     -- 6개 지역 선택 칩
+    search/AreaSelector.tsx     -- 구(Ward) 단위로 그룹화된 지역 선택 칩 (22개 역, 단일 선택)
     search/CategoryFilter.tsx   -- 카테고리 버튼 (韓国料理, 中華料理, 洋食 등)
     results/ResultsList.tsx     -- 결과 카드 그리드
     results/RestaurantCard.tsx  -- 개별 레스토랑 카드
@@ -90,15 +90,21 @@ src/
 韓国料理, 中華料理, 洋食, 和食, ラーメン, カフェ, 居酒屋, イタリアン, 定食, うどん・そば, アジア料理, スイーツ・ケーキ, ベーカリー
 
 ### 검색 동작 규칙
-- **다중 지역 선택 시**: 선택된 지역별로 개별 API 호출(`Promise.allSettled`) 후 결과를 병합하여 표시한다. (최대 6회 호출)
-  - 병합 결과는 `place.id` 기준으로 중복 제거 후, **rating 내림차순**으로 정렬한다.
-  - 일부 지역 호출 실패 시 성공한 결과만 표시하고, 실패한 지역을 알림으로 안내한다.
+- **지역 선택**: 한 번에 1개 역만 선택 가능. 다른 역을 클릭하면 이전 선택이 해제된다.
+  - API는 선택된 1개 역 기준으로 1회 호출한다.
+  - 일부 호출 실패 시 에러 알림을 표시한다.
 - **카테고리 + 자유 검색어 조합**: 카테고리를 선택한 상태에서 자유 검색어를 입력하면, 카테고리는 해제되고 자유 검색어만 적용된다. 반대로 카테고리를 클릭하면 자유 검색어는 초기화된다. (상호 배타적)
 
 ### 상태 관리
 React `useState`로 충분 (외부 라이브러리 불필요):
 - `query`, `selectedAreas`, `selectedCategory`, `results`, `isLoading`, `error`, `selectedPlaceId`, `placeDetail`
 - `openNowOnly`, `sortBy`, `viewMode`, `userLocation`
+
+### 검색 결과 캐싱
+- `useTextSearch` 모듈 레벨에 `Map<string, Place[]>` 캐시를 보유한다.
+- 캐시 키: `"${searchTerm}|${areaIds}"` (예: `"ラーメン|koenji,ogikubo"`)
+- 캐시 히트 시 API 호출 없이 즉시 결과 반환. 일부 지역 호출 실패 시에는 캐시에 저장하지 않는다.
+- 페이지 새로고침 시 모듈이 재로드되어 캐시가 자동 초기화되므로 별도 TTL 불필요.
 
 ### URL 상태 동기화
 - 검색 상태(지역·카테고리·자유검색어)를 URL 쿼리스트링에 반영한다.

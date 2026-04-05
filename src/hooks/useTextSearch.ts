@@ -3,6 +3,8 @@ import { textSearch } from '../lib/api';
 import type { Place } from '../lib/types';
 import type { Area } from '../lib/constants';
 
+const cache = new Map<string, Place[]>();
+
 interface UseTextSearchResult {
   results: Place[];
   isLoading: boolean;
@@ -35,7 +37,18 @@ export function useTextSearch(
     const controller = new AbortController();
     abortRef.current = controller;
 
+    const cacheKey = `${searchTerm}|${selectedAreas.map((a) => a.id).join(',')}`;
+
     const run = async () => {
+      // Return cached result immediately if available
+      if (cache.has(cacheKey)) {
+        setResults(cache.get(cacheKey)!);
+        setIsLoading(false);
+        setError(null);
+        setFailedAreas([]);
+        return;
+      }
+
       setIsLoading(true);
       setError(null);
       setFailedAreas([]);
@@ -76,6 +89,8 @@ export function useTextSearch(
             return true;
           })
           .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
+
+        if (failed.length === 0) cache.set(cacheKey, deduped);
 
         setResults(deduped);
         setFailedAreas(failed);
