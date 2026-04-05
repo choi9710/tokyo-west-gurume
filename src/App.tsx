@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import type { Area, Category } from './lib/constants';
+import { useState, useEffect } from 'react';
+import { AREAS, CATEGORIES, type Area, type Category } from './lib/constants';
 import { useDebounce } from './hooks/useDebounce';
 import { useTextSearch } from './hooks/useTextSearch';
 import { usePlaceDetails } from './hooks/usePlaceDetails';
@@ -20,14 +20,32 @@ function App() {
   const [apiKey, setApiKey] = useState<string>(
     () => localStorage.getItem('gmaps_api_key') ?? import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? ''
   );
-  const [query, setQuery] = useState('');
-  const [selectedAreas, setSelectedAreas] = useState<Area[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+  const [query, setQuery] = useState(
+    () => new URLSearchParams(window.location.search).get('q') ?? ''
+  );
+  const [selectedAreas, setSelectedAreas] = useState<Area[]>(() => {
+    const ids = new URLSearchParams(window.location.search).get('areas')?.split(',').filter(Boolean) ?? [];
+    return AREAS.filter((a) => ids.includes(a.id));
+  });
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(() => {
+    const cat = new URLSearchParams(window.location.search).get('category');
+    return (CATEGORIES as readonly string[]).includes(cat ?? '') ? (cat as Category) : null;
+  });
   const [selectedPlaceId, setSelectedPlaceId] = useState<string | null>(null);
   const [openNowOnly, setOpenNowOnly] = useState(false);
   const [sortBy, setSortBy] = useState<SortBy>('rating');
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+
+  // Sync search state to URL
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (selectedAreas.length > 0) params.set('areas', selectedAreas.map((a) => a.id).join(','));
+    if (selectedCategory) params.set('category', selectedCategory);
+    else if (query.trim()) params.set('q', query.trim());
+    const search = params.toString();
+    window.history.replaceState(null, '', search ? `?${search}` : window.location.pathname);
+  }, [selectedAreas, selectedCategory, query]);
 
   if (!apiKey) {
     return <ApiKeySetup onSave={setApiKey} />;
