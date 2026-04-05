@@ -13,7 +13,7 @@ export async function textSearch(
   radiusMeters = 800
 ): Promise<Place[]> {
   const location = center
-    ? { locationRestriction: { circle: { center: { latitude: center.lat, longitude: center.lng }, radius: radiusMeters } } }
+    ? { locationBias: { circle: { center: { latitude: center.lat, longitude: center.lng }, radius: radiusMeters } } }
     : { locationBias: LOCATION_BIAS };
 
   const res = await fetch(`${BASE_URL}/places:searchText`, {
