@@ -41,12 +41,18 @@ export function useTextSearch(
       setFailedAreas([]);
 
       try {
-        const queries =
-          selectedAreas.length > 0
-            ? selectedAreas.map((area) => `${searchTerm} ${area.name}`)
-            : [searchTerm];
+        const isCategory = !!selectedCategory;
 
-        const settled = await Promise.allSettled(queries.map((q) => textSearch(q)));
+        const requests =
+          selectedAreas.length > 0
+            ? selectedAreas.map((area) =>
+                isCategory
+                  ? textSearch(searchTerm, { lat: area.lat, lng: area.lng })
+                  : textSearch(`${searchTerm} ${area.name}`)
+              )
+            : [textSearch(searchTerm)];
+
+        const settled = await Promise.allSettled(requests);
 
         if (controller.signal.aborted) return;
 

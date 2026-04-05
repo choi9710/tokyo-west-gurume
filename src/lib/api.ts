@@ -7,7 +7,15 @@ export function getApiKey(): string {
   return localStorage.getItem('gmaps_api_key') ?? import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? '';
 }
 
-export async function textSearch(query: string): Promise<Place[]> {
+export async function textSearch(
+  query: string,
+  center?: { lat: number; lng: number },
+  radiusMeters = 800
+): Promise<Place[]> {
+  const location = center
+    ? { locationRestriction: { circle: { center: { latitude: center.lat, longitude: center.lng }, radius: radiusMeters } } }
+    : { locationBias: LOCATION_BIAS };
+
   const res = await fetch(`${BASE_URL}/places:searchText`, {
     method: 'POST',
     headers: {
@@ -17,7 +25,7 @@ export async function textSearch(query: string): Promise<Place[]> {
     },
     body: JSON.stringify({
       textQuery: query,
-      locationBias: LOCATION_BIAS,
+      ...location,
       languageCode: 'ja',
     }),
   });
