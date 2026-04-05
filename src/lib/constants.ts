@@ -108,7 +108,10 @@ export const LOCATION_BIAS = {
 };
 
 export const TEXT_SEARCH_FIELD_MASK =
-  'places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.photos,places.priceLevel,places.regularOpeningHours.openNow';
+  'places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.photos,places.priceLevel,places.regularOpeningHours.openNow,places.regularOpeningHours.weekdayDescriptions';
 
-export const PLACE_DETAILS_FIELD_MASK =
-  'id,displayName,formattedAddress,location,rating,userRatingCount,photos,regularOpeningHours,nationalPhoneNumber,websiteUri,googleMapsUri,reviews,priceLevel';
+// photos, openingHours, address etc. already fetched via Text Search — only request truly new fields
+export const PLACE_DETAILS_FIELD_MASK = 'nationalPhoneNumber,websiteUri,googleMapsUri';
+
+// reviews は Preferred tier (高コスト) なので別途オンデマンドで取得
+export const PLACE_REVIEWS_FIELD_MASK = 'reviews';

@@ -1,5 +1,5 @@
-import type { Place, PlaceDetail } from './types';
-import { LOCATION_BIAS, TEXT_SEARCH_FIELD_MASK, PLACE_DETAILS_FIELD_MASK } from './constants';
+import type { Place, Review } from './types';
+import { LOCATION_BIAS, TEXT_SEARCH_FIELD_MASK, PLACE_DETAILS_FIELD_MASK, PLACE_REVIEWS_FIELD_MASK } from './constants';
 
 const BASE_URL = 'https://places.googleapis.com/v1';
 
@@ -50,7 +50,13 @@ export async function textSearch(
   return (data.places ?? []) as Place[];
 }
 
-export async function getPlaceDetails(placeId: string): Promise<PlaceDetail> {
+export interface PlaceExtra {
+  nationalPhoneNumber?: string;
+  websiteUri?: string;
+  googleMapsUri?: string;
+}
+
+export async function getPlaceDetails(placeId: string): Promise<PlaceExtra> {
   const res = await fetch(`${BASE_URL}/places/${placeId}`, {
     headers: {
       'X-Goog-Api-Key': getApiKey(),
@@ -62,7 +68,19 @@ export async function getPlaceDetails(placeId: string): Promise<PlaceDetail> {
     throw new Error(`Place Details failed: ${res.status}`);
   }
 
-  return res.json() as Promise<PlaceDetail>;
+  return res.json() as Promise<PlaceExtra>;
+}
+
+export async function getPlaceReviews(placeId: string): Promise<Review[]> {
+  const res = await fetch(`${BASE_URL}/places/${placeId}`, {
+    headers: {
+      'X-Goog-Api-Key': getApiKey(),
+      'X-Goog-FieldMask': PLACE_REVIEWS_FIELD_MASK,
+    },
+  });
+  if (!res.ok) throw new Error(`Place Reviews failed: ${res.status}`);
+  const data = await res.json() as { reviews?: Review[] };
+  return data.reviews ?? [];
 }
 
 export function getPhotoUrl(photoName: string, maxWidthPx: 400 | 800 = 400): string {

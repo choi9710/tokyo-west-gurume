@@ -5,6 +5,32 @@ import type { Area } from '../lib/constants';
 
 const cache = new Map<string, Place[]>();
 
+const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+const LS_PREFIX = 'tkg_search_';
+
+function lsGet(key: string): Place[] | null {
+  try {
+    const raw = localStorage.getItem(LS_PREFIX + key);
+    if (!raw) return null;
+    const { data, ts } = JSON.parse(raw) as { data: Place[]; ts: number };
+    if (Date.now() - ts > CACHE_TTL) {
+      localStorage.removeItem(LS_PREFIX + key);
+      return null;
+    }
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+function lsSet(key: string, data: Place[]): void {
+  try {
+    localStorage.setItem(LS_PREFIX + key, JSON.stringify({ data, ts: Date.now() }));
+  } catch {
+    // localStorage full or unavailable
+  }
+}
+
 interface UseTextSearchResult {
   results: Place[];
   isLoading: boolean;
@@ -25,7 +51,7 @@ export function useTextSearch(
 
   useEffect(() => {
     const searchTerm = selectedCategory ?? query.trim();
-    if (!searchTerm) {
+    if (!searchTerm || selectedAreas.length === 0) {
       setResults([]);
       setError(null);
       setFailedAreas([]);
@@ -40,9 +66,18 @@ export function useTextSearch(
     const cacheKey = `${searchTerm}|${selectedAreas.map((a) => a.id).join(',')}`;
 
     const run = async () => {
-      // Return cached result immediately if available
+      // Return cached result immediately if available (memory first, then localStorage)
       if (cache.has(cacheKey)) {
         setResults(cache.get(cacheKey)!);
+        setIsLoading(false);
+        setError(null);
+        setFailedAreas([]);
+        return;
+      }
+      const lsCached = lsGet(cacheKey);
+      if (lsCached) {
+        cache.set(cacheKey, lsCached);
+        setResults(lsCached);
         setIsLoading(false);
         setError(null);
         setFailedAreas([]);
@@ -90,7 +125,10 @@ export function useTextSearch(
           })
           .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
 
-        if (failed.length === 0) cache.set(cacheKey, deduped);
+        if (failed.length === 0) {
+          cache.set(cacheKey, deduped);
+          lsSet(cacheKey, deduped);
+        }
 
         setResults(deduped);
         setFailedAreas(failed);

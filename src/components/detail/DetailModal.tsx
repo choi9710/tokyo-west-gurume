@@ -1,9 +1,13 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { PlaceDetail, Review } from '../../lib/types';
+import { getPlaceReviews } from '../../lib/api';
 import { PhotoGallery } from './PhotoGallery';
 import { DetailMap } from './DetailMap';
 
 const TWO_YEARS_MS = 2 * 365 * 24 * 60 * 60 * 1000;
+
+// Module-level in-memory cache for reviews (separate from PlaceDetail cache)
+const reviewsCache = new Map<string, Review[]>();
 
 function filterRecentReviews(reviews: Review[]): Review[] {
   const now = Date.now();
@@ -33,6 +37,36 @@ interface DetailModalProps {
 export function DetailModal({ detail, isLoading, error, onClose }: DetailModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
+
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [reviewsLoaded, setReviewsLoaded] = useState(false);
+
+  // Reset review state when switching places
+  useEffect(() => {
+    setReviews([]);
+    setReviewsLoaded(false);
+  }, [detail?.id]);
+
+  const loadReviews = async () => {
+    if (!detail || reviewsLoaded || reviewsLoading) return;
+    if (reviewsCache.has(detail.id)) {
+      setReviews(reviewsCache.get(detail.id)!);
+      setReviewsLoaded(true);
+      return;
+    }
+    setReviewsLoading(true);
+    try {
+      const data = await getPlaceReviews(detail.id);
+      reviewsCache.set(detail.id, data);
+      setReviews(data);
+    } catch {
+      // fail silently — button will remain visible to retry
+    } finally {
+      setReviewsLoading(false);
+      setReviewsLoaded(true);
+    }
+  };
 
   // Focus trap & ESC key
   useEffect(() => {
@@ -114,7 +148,7 @@ export function DetailModal({ detail, isLoading, error, onClose }: DetailModalPr
           )}
 
           {detail && !isLoading && (() => {
-            const recentReviews = filterRecentReviews(detail.reviews ?? []);
+            const recentReviews = filterRecentReviews(reviews);
             const prices = extractPrices(recentReviews);
             return (
             <>
@@ -136,19 +170,6 @@ export function DetailModal({ detail, isLoading, error, onClose }: DetailModalPr
                       </span>
                     )}
                   </p>
-                )}
-
-                {prices.length > 0 && (
-                  <div className="bg-orange-50 border border-orange-100 rounded-lg px-3 py-2">
-                    <p className="text-xs text-orange-700 font-semibold mb-1.5">💴 価格の目安（レビューより）</p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {prices.map((p, i) => (
-                        <span key={i} className="bg-white border border-orange-200 text-orange-800 text-xs px-2 py-0.5 rounded-full">
-                          {p}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
                 )}
 
                 {detail.nationalPhoneNumber && (
@@ -192,25 +213,54 @@ export function DetailModal({ detail, isLoading, error, onClose }: DetailModalPr
                 </div>
               </div>
 
-              {recentReviews.length > 0 && (
-                <div>
-                  <h3 className="font-semibold text-gray-800 text-sm mb-2">レビュー（2年以内）</h3>
-                  <div className="space-y-3">
-                    {recentReviews.slice(0, 3).map((review) => (
-                      <div key={review.name} className="bg-gray-50 rounded-lg p-3 text-xs">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-medium text-gray-800">
-                            {review.authorAttribution.displayName}
-                          </span>
-                          <span className="text-amber-500">{'⭐'.repeat(review.rating)}</span>
-                          <span className="text-gray-400">{review.relativePublishTimeDescription}</span>
+              {/* Reviews: on-demand to avoid Preferred tier API cost */}
+              <div>
+                {!reviewsLoaded ? (
+                  <button
+                    onClick={loadReviews}
+                    disabled={reviewsLoading}
+                    className="w-full py-2 text-sm text-orange-600 border border-orange-200 rounded-lg hover:bg-orange-50 transition-colors disabled:opacity-50"
+                  >
+                    {reviewsLoading ? '読み込み中...' : 'レビューを見る'}
+                  </button>
+                ) : (
+                  <>
+                    {prices.length > 0 && (
+                      <div className="bg-orange-50 border border-orange-100 rounded-lg px-3 py-2 mb-3">
+                        <p className="text-xs text-orange-700 font-semibold mb-1.5">💴 価格の目安（レビューより）</p>
+                        <div className="flex flex-wrap gap-1.5">
+                          {prices.map((p, i) => (
+                            <span key={i} className="bg-white border border-orange-200 text-orange-800 text-xs px-2 py-0.5 rounded-full">
+                              {p}
+                            </span>
+                          ))}
                         </div>
-                        <p className="text-gray-700 line-clamp-3">{review.text.text}</p>
                       </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+                    )}
+                    {recentReviews.length > 0 ? (
+                      <>
+                        <h3 className="font-semibold text-gray-800 text-sm mb-2">レビュー（2年以内）</h3>
+                        <div className="space-y-3">
+                          {recentReviews.slice(0, 3).map((review) => (
+                            <div key={review.name} className="bg-gray-50 rounded-lg p-3 text-xs">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="font-medium text-gray-800">
+                                  {review.authorAttribution.displayName}
+                                </span>
+                                <span className="text-amber-500">{'⭐'.repeat(review.rating)}</span>
+                                <span className="text-gray-400">{review.relativePublishTimeDescription}</span>
+                              </div>
+                              <p className="text-gray-700 line-clamp-3">{review.text.text}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    ) : (
+                      <p className="text-sm text-gray-400 text-center py-2">レビューはありません</p>
+                    )}
+                  </>
+                )}
+              </div>
             </>
             );
           })()}
