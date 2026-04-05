@@ -30,10 +30,12 @@ export function ResultsList({
 }: ResultsListProps) {
   const [visible, setVisible] = useState(PAGE_SIZE);
 
-  // Reset pagination when result set changes
+  // Reset pagination only when the actual result set changes (not on every re-render).
+  // Comparing IDs avoids false resets caused by new array references from parent re-renders.
+  const resultIds = results.map((p) => p.id).join(',');
   useEffect(() => {
     setVisible(PAGE_SIZE);
-  }, [results]);
+  }, [resultIds]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (isLoading) return <ResultsSkeleton />;
 
