@@ -9,7 +9,7 @@ export function Header({ onResetApiKey }: Props) {
         <span className="text-xl">🍜</span>
         <h1 className="text-lg font-bold text-gray-900 tracking-tight">
           東京西グルメ
-          <span className="ml-2 text-sm font-normal text-gray-500">新宿/豊島/中野/杉並/練馬/板橋</span>
+          <span className="ml-2 text-sm font-normal text-gray-500">西東京エリア 맛집 검색</span>
         </h1>
         {onResetApiKey && (
           <button
