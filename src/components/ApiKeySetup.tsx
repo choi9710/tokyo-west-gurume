@@ -57,7 +57,7 @@ export function ApiKeySetup({ onSave }: Props) {
           <span className="text-3xl">🍜</span>
           <h1 className="text-xl font-bold text-gray-900">東京西グルメ</h1>
         </div>
-        <p className="text-sm text-gray-500 mb-6">中野〜吉祥寺の飲食店検索アプリ</p>
+        <p className="text-sm text-gray-500 mb-6">新宿/豊島/中野/杉並/練馬/板橋</p>
 
         <h2 className="text-base font-semibold text-gray-800 mb-1">
           Google Maps APIキーを入力
