@@ -88,6 +88,13 @@ export const CATEGORIES = [
   '和食',
   'ラーメン',
   'カフェ',
+  '居酒屋',
+  'イタリアン',
+  '定食',
+  'うどん・そば',
+  'アジア料理',
+  'スイーツ・ケーキ',
+  'ベーカリー',
 ] as const;
 
 export type Category = typeof CATEGORIES[number];
