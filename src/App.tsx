@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { APIProvider } from '@vis.gl/react-google-maps';
 import { AREAS, CATEGORIES, type Area, type Category } from './lib/constants';
 import { useDebounce } from './hooks/useDebounce';
 import { useTextSearch } from './hooks/useTextSearch';
@@ -139,6 +140,7 @@ function App() {
   const listFailedAreas = showFavorites ? [] : failedAreas;
 
   return (
+    <APIProvider apiKey={apiKey}>
     <div className="min-h-screen bg-gray-50">
       <Header onResetApiKey={() => { localStorage.removeItem('gmaps_api_key'); setApiKey(''); }} />
 
@@ -204,6 +206,7 @@ function App() {
         />
       )}
     </div>
+    </APIProvider>
   );
 }
 
