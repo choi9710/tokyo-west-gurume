@@ -22,6 +22,8 @@ src/
     results/ResultsList.tsx     -- 결과 카드 그리드
     results/RestaurantCard.tsx  -- 개별 레스토랑 카드
     results/ResultsSkeleton.tsx -- 로딩 스켈레톤
+    results/ResultsControls.tsx -- 영업중 필터 / 정렬 / 뷰 모드 토글 바
+    results/ResultsMap.tsx      -- 검색 결과 지도 뷰 (핀 클릭 시 상세 모달)
     detail/DetailModal.tsx      -- 상세정보 모달
     detail/DetailMap.tsx        -- Google Map 임베드
     detail/PhotoGallery.tsx     -- 사진 갤러리
@@ -43,7 +45,7 @@ src/
 ### Google Maps API 사용
 
 1. **Text Search** (`places:searchText`): 검색어 + 지역명을 조합하여 호출. `locationBias`로 중앙선 구간(中野~吉祥寺) 영역을 지정하여 결과 정확도 향상. `X-Goog-FieldMask`로 필요한 필드만 요청하여 비용 최적화.
-   - Text Search FieldMask: `places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.photos,places.priceLevel`
+   - Text Search FieldMask: `places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.photos,places.priceLevel,places.regularOpeningHours.openNow`
 2. **Place Details** (`places/{id}`): 카드 클릭 시 상세정보 조회.
    - Details FieldMask: `id,displayName,formattedAddress,location,rating,userRatingCount,photos,regularOpeningHours,nationalPhoneNumber,websiteUri,googleMapsUri,reviews,priceLevel`
 3. **Photo URL**: `places/{photoName}/media?maxWidthPx=400&key=...` 엔드포인트로 사진 표시. 카드 썸네일은 `maxWidthPx=400`, 갤러리는 `maxWidthPx=800` 사용.

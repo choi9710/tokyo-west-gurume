@@ -161,7 +161,7 @@ export function DetailModal({ detail, isLoading, error, onClose }: DetailModalPr
                       {detail.regularOpeningHours.openNow ? '営業中' : '営業時間外'}
                     </p>
                     <ul className="text-gray-600 space-y-0.5 text-xs">
-                      {detail.regularOpeningHours.weekdayDescriptions.map((d, i) => (
+                      {detail.regularOpeningHours.weekdayDescriptions?.map((d, i) => (
                         <li key={i}>{d}</li>
                       ))}
                     </ul>

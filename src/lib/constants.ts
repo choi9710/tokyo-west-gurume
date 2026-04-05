@@ -108,7 +108,7 @@ export const LOCATION_BIAS = {
 };
 
 export const TEXT_SEARCH_FIELD_MASK =
-  'places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.photos,places.priceLevel';
+  'places.id,places.displayName,places.formattedAddress,places.location,places.rating,places.userRatingCount,places.photos,places.priceLevel,places.regularOpeningHours.openNow';
 
 export const PLACE_DETAILS_FIELD_MASK =
   'id,displayName,formattedAddress,location,rating,userRatingCount,photos,regularOpeningHours,nationalPhoneNumber,websiteUri,googleMapsUri,reviews,priceLevel';

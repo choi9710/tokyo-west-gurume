@@ -17,7 +17,7 @@ export interface PlacePhoto {
 
 export interface OpeningHours {
   openNow: boolean;
-  weekdayDescriptions: string[];
+  weekdayDescriptions?: string[];
 }
 
 export interface Review {
@@ -46,10 +46,10 @@ export interface Place {
   userRatingCount?: number;
   photos?: PlacePhoto[];
   priceLevel?: PriceLevel;
+  regularOpeningHours?: OpeningHours;
 }
 
 export interface PlaceDetail extends Place {
-  regularOpeningHours?: OpeningHours;
   nationalPhoneNumber?: string;
   websiteUri?: string;
   googleMapsUri?: string;
