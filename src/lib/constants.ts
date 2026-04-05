@@ -55,6 +55,15 @@ export const WARDS: Ward[] = [
       { id: 'nerima',          name: '練馬',     lat: 35.7357, lng: 139.6517 },
       { id: 'shakujikoen',     name: '石神井公園', lat: 35.7369, lng: 139.6214 },
       { id: 'oizumigakuen',    name: '大泉学園',  lat: 35.7393, lng: 139.5971 },
+      { id: 'hikarigaoka',     name: '光が丘',   lat: 35.7606, lng: 139.6189 },
+    ],
+  },
+  {
+    id: 'musashino',
+    name: '武蔵野市・三鷹市',
+    areas: [
+      { id: 'kichijoji', name: '吉祥寺', lat: 35.7028, lng: 139.5798 },
+      { id: 'mitaka',    name: '三鷹',   lat: 35.6836, lng: 139.5603 },
     ],
   },
   {
@@ -82,10 +91,10 @@ export const CATEGORIES = [
 
 export type Category = typeof CATEGORIES[number];
 
-// locationBias rectangle covering Shinjuku/Toshima/Nakano/Suginami/Nerima/Itabashi
+// locationBias rectangle covering Shinjuku/Toshima/Nakano/Suginami/Nerima/Itabashi/Musashino/Mitaka
 export const LOCATION_BIAS = {
   rectangle: {
-    low:  { latitude: 35.680, longitude: 139.575 },
+    low:  { latitude: 35.670, longitude: 139.550 },
     high: { latitude: 35.780, longitude: 139.750 },
   },
 };
