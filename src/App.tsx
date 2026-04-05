@@ -14,6 +14,7 @@ import { ResultsControls } from './components/results/ResultsControls';
 import { ResultsMap } from './components/results/ResultsMap';
 import { DetailModal } from './components/detail/DetailModal';
 import { ApiKeySetup } from './components/ApiKeySetup';
+import { ApiKeyModal } from './components/ApiKeyModal';
 import type { Place } from './lib/types';
 
 type SortBy = 'rating' | 'reviewCount' | 'distance';
@@ -43,6 +44,7 @@ function App() {
   const [viewMode, setViewMode] = useState<ViewMode>('list');
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [showFavorites, setShowFavorites] = useState(false);
+  const [showApiKeyModal, setShowApiKeyModal] = useState(false);
 
   const { favorites, toggle: toggleFavorite, isFavorite } = useFavorites();
 
@@ -142,7 +144,7 @@ function App() {
   return (
     <APIProvider apiKey={apiKey}>
     <div className="min-h-screen bg-gray-50">
-      <Header onResetApiKey={() => { localStorage.removeItem('gmaps_api_key'); setApiKey(''); }} />
+      <Header onChangeApiKey={() => setShowApiKeyModal(true)} />
 
       <main className="max-w-5xl mx-auto px-4 py-4 space-y-3">
         <SearchBar value={query} onSearch={handleQueryChange} />
@@ -203,6 +205,14 @@ function App() {
           isLoading={detailLoading}
           error={detailError}
           onClose={() => setSelectedPlace(null)}
+        />
+      )}
+
+      {showApiKeyModal && (
+        <ApiKeyModal
+          currentKey={apiKey}
+          onSave={(key) => { setApiKey(key); setShowApiKeyModal(false); }}
+          onClose={() => setShowApiKeyModal(false)}
         />
       )}
     </div>
