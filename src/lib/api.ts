@@ -12,9 +12,21 @@ export async function textSearch(
   center?: { lat: number; lng: number },
   radiusMeters = 800
 ): Promise<Place[]> {
-  const location = center
-    ? { locationBias: { circle: { center: { latitude: center.lat, longitude: center.lng }, radius: radiusMeters } } }
-    : { locationBias: LOCATION_BIAS };
+  let location: object;
+  if (center) {
+    const latDelta = radiusMeters / 111000;
+    const lngDelta = radiusMeters / (111000 * Math.cos((center.lat * Math.PI) / 180));
+    location = {
+      locationRestriction: {
+        rectangle: {
+          low:  { latitude: center.lat - latDelta, longitude: center.lng - lngDelta },
+          high: { latitude: center.lat + latDelta, longitude: center.lng + lngDelta },
+        },
+      },
+    };
+  } else {
+    location = { locationBias: LOCATION_BIAS };
+  }
 
   const res = await fetch(`${BASE_URL}/places:searchText`, {
     method: 'POST',
