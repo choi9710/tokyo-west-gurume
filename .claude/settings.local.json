@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:developers.google.com)",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:visgl.github.io)",
+      "Bash(npm create:*)",
+      "Bash(rm:*)",
+      "Bash(cp -r \"/c/Users/chlck/OneDrive/바탕 화면/tokyo-west-temp/\"* \"/c/Users/chlck/OneDrive/바탕 화면/Tokyo west gurume/\")",
+      "Bash(cp \"/c/Users/chlck/OneDrive/바탕 화면/tokyo-west-temp/.gitignore\" \"/c/Users/chlck/OneDrive/바탕 화면/Tokyo west gurume/\")",
+      "Bash(rm -rf \"/c/Users/chlck/OneDrive/바탕 화면/tokyo-west-temp\")",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(gh auth:*)"
+    ]
+  }
+}
