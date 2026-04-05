@@ -25,6 +25,7 @@ export interface Review {
   rating: number;
   text: { text: string; languageCode: string };
   relativePublishTimeDescription: string;
+  publishTime?: string;
   authorAttribution: { displayName: string; uri: string; photoUri: string };
 }
 

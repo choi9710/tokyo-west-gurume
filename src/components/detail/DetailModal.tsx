@@ -1,7 +1,27 @@
 import { useEffect, useRef } from 'react';
-import type { PlaceDetail } from '../../lib/types';
+import type { PlaceDetail, Review } from '../../lib/types';
 import { PhotoGallery } from './PhotoGallery';
 import { DetailMap } from './DetailMap';
+
+const TWO_YEARS_MS = 2 * 365 * 24 * 60 * 60 * 1000;
+
+function filterRecentReviews(reviews: Review[]): Review[] {
+  const now = Date.now();
+  return reviews.filter((r) => {
+    if (!r.publishTime) return true;
+    return now - new Date(r.publishTime).getTime() <= TWO_YEARS_MS;
+  });
+}
+
+function extractPrices(reviews: Review[]): string[] {
+  const pricePattern = /[¥￥][\d,]+(?:\s*[〜~]\s*[¥￥][\d,]+)?|[\d,]+(?:\s*[〜~]\s*[\d,]+)?\s*円/g;
+  const found = new Set<string>();
+  for (const r of reviews) {
+    const matches = r.text.text.match(pricePattern) ?? [];
+    matches.forEach((m) => found.add(m.trim()));
+  }
+  return Array.from(found).slice(0, 6);
+}
 
 interface DetailModalProps {
   detail: PlaceDetail | null;
@@ -93,7 +113,10 @@ export function DetailModal({ detail, isLoading, error, onClose }: DetailModalPr
             </div>
           )}
 
-          {detail && !isLoading && (
+          {detail && !isLoading && (() => {
+            const recentReviews = filterRecentReviews(detail.reviews ?? []);
+            const prices = extractPrices(recentReviews);
+            return (
             <>
               {detail.photos && detail.photos.length > 0 && (
                 <PhotoGallery photos={detail.photos} placeName={detail.displayName.text} />
@@ -113,6 +136,19 @@ export function DetailModal({ detail, isLoading, error, onClose }: DetailModalPr
                       </span>
                     )}
                   </p>
+                )}
+
+                {prices.length > 0 && (
+                  <div className="bg-orange-50 border border-orange-100 rounded-lg px-3 py-2">
+                    <p className="text-xs text-orange-700 font-semibold mb-1.5">💴 価格の目安（レビューより）</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {prices.map((p, i) => (
+                        <span key={i} className="bg-white border border-orange-200 text-orange-800 text-xs px-2 py-0.5 rounded-full">
+                          {p}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                 )}
 
                 {detail.nationalPhoneNumber && (
@@ -156,11 +192,11 @@ export function DetailModal({ detail, isLoading, error, onClose }: DetailModalPr
                 </div>
               </div>
 
-              {detail.reviews && detail.reviews.length > 0 && (
+              {recentReviews.length > 0 && (
                 <div>
-                  <h3 className="font-semibold text-gray-800 text-sm mb-2">レビュー</h3>
+                  <h3 className="font-semibold text-gray-800 text-sm mb-2">レビュー（2年以内）</h3>
                   <div className="space-y-3">
-                    {detail.reviews.slice(0, 3).map((review) => (
+                    {recentReviews.slice(0, 3).map((review) => (
                       <div key={review.name} className="bg-gray-50 rounded-lg p-3 text-xs">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="font-medium text-gray-800">
@@ -176,7 +212,8 @@ export function DetailModal({ detail, isLoading, error, onClose }: DetailModalPr
                 </div>
               )}
             </>
-          )}
+            );
+          })()}
         </div>
       </div>
     </div>
